@@ -448,13 +448,41 @@ lemma NatToBinary_WellFormed(n: nat)
 // representation as possible!
 // HINT: you will probably find it useful to define multiple helper functions,
 // some of which may get their own correctness lemmas.
-function Add(n: binary, m: binary): binary
-  requires Length(n) == Length(m)
 
+function AddWithCarry(n: binary, m: binary, carry: bool): binary
+  requires Length(n) == Length(m)
+  //ensures Length(AddWithCarry(n, m, carry)) <= Length(n) + 1
+{
+  match (n, m)
+  case (Nil, Nil) =>
+    if carry then Cons(true, Nil) else Nil
+  case (Cons(b1, n'), Cons(b2, m')) =>
+    var sum := (b1 != b2) != carry;      // XOR for full sum
+    var carryOut := (b1 && b2) || (carry && (b1 != b2));
+    var rest := AddWithCarry(n', m', carryOut);
+    Cons(sum, rest)
+}
+
+function Add(n: binary, m: binary): binary
+  requires Length(n) == Length(m) {
+    AddWithCarry(n, m, false)
+  }
+
+// method Test4(){
+//   assert Add(Cons(true, Nil), Cons(false, Nil)) == Cons(true, Nil);
+//   assert Add(Cons(false, Nil), Cons(false, Nil)) == Cons(false, Nil);
+//   assert Add(Cons(true, Nil), Cons(true, Nil)) == Cons(false, Cons(true, Nil));
+//   assert Add(Cons(true, Cons(false, Cons(true, Nil))), Cons(true, Cons(false, Cons(true, Nil)))) == Cons(false, Cons(true, Cons(false, Cons(true, Nil))));
+//   assert Add(Cons(false, Cons(false, Cons(true, Nil))), Cons(false, Cons(false, Cons(true, Nil)))) == Cons(false, Cons(false, Cons(false, Cons(true, Nil))));
+//   assert Add(Cons(true, Cons(true, Cons(true, Nil))), Cons(true, Cons(true, Cons(true, Nil)))) == Cons(false, Cons(true, Cons(true, Cons(true, Nil))));
+//   assert Add(Cons(false, Cons(false, Nil)), Cons(false, Cons(false, Nil))) == Cons(false, Cons(false, Nil));
+// }
 // Finally, prove your implementation correct.
 lemma Add_correct(n: binary, m: binary)
   requires Length(n) == Length(m)
-  ensures BinaryToNat(Add(n, m)) == BinaryToNat(n) + BinaryToNat(m)
+  ensures BinaryToNat(Add(n, m)) == BinaryToNat(n) + BinaryToNat(m) {
+    
+  }
 
 
 
